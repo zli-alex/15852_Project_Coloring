@@ -1,34 +1,17 @@
+#pragma once
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <vector>
 #include <random>
-#include <utility>
 
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 #include <parlay/random.h>
 #include <parlay/parallel.h>
 
-using vertex = int;
-using edge   = std::pair<vertex, vertex>;
-using edges  = parlay::sequence<edge>;
-using graph  = parlay::sequence<parlay::sequence<vertex>>;
-
-/**
- * @brief Sort and deduplicate a sequence of vertices
- * 
- * @param S Sequence to be sorted
- * @return parlay::sequence<vertex> 
- */
-static parlay::sequence<vertex> sort_dedup_vertices(parlay::sequence<vertex> S) {
-    if (S.empty()) return S;
-    // sort
-    parlay::integer_sort_inplace(S, [](vertex v) { return (size_t)v; });
-    // find first appearance and pack
-    auto first_appear = parlay::tabulate(S.size(), [&](size_t i) -> bool { return (i == 0 || S[i] != S[i - 1]); });
-    return parlay::pack(S, first_appear);
-}
+#include "graph_types.h"
 
 /**
  * @brief Sample from geom distr for level assignment
