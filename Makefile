@@ -1,8 +1,10 @@
-# Dynamic graph coloring driver + ParlayLib (header-only) + parlaylib/examples helpers
+# ParlayLib (header-only) + parlaylib/examples graph helpers
 #
 # Usage:
-#   make              # build ./dynamic_graph_color_dplus1
-#   make CXX=clang++  # use a different compiler
+#   make                         # build both drivers
+#   make dynamic_graph_color_dplus1
+#   make dynamic_graph_color_cbyd
+#   make CXX=clang++            # different compiler
 #   make clean
 
 CXX      ?= g++
@@ -14,15 +16,17 @@ EXAMPLES_INC := $(PARLAY_ROOT)/examples
 
 INCLUDES := -I. -I$(PARLAY_INC) -I$(EXAMPLES_INC)
 
-TARGET := dynamic_graph_color_dplus1
-SRC    := dynamic_graph_color_dplus1.cpp
+TARGETS := dynamic_graph_color_dplus1 dynamic_graph_color_cbyd
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(TARGETS)
 
-$(TARGET): $(SRC) dynamic_graph_color_dplus1.h dynamic_graph_color.h
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $(SRC)
+dynamic_graph_color_dplus1: dynamic_graph_color_dplus1.cpp dynamic_graph_color_dplus1.h
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ dynamic_graph_color_dplus1.cpp
+
+dynamic_graph_color_cbyd: dynamic_graph_color_cbyd.cpp dynamic_graph_color_cbyd.h
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ dynamic_graph_color_cbyd.cpp
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGETS)
