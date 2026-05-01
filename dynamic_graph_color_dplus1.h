@@ -230,7 +230,7 @@ struct DynamicGraphColorDplus1 {
             });
 
             // 7. update states
-            S = parlay::append(conflicts, conflict_w);
+            S = parlay::append(conflict_sorted, conflict_w);
             rounds++;
         }
         last_recolor_rounds = rounds;
