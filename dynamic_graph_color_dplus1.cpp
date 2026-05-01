@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
   // ================================================================
   std::cout << "=== TEST 1: Static coloring (one AddEdgeBatch) ===\n";
   {
-    DynamicGraphColoring dgc(n, Delta);
+    DynamicGraphColorDplus1 dgc(n, Delta);
 
     parlay::internal::timer t("T1", false);
     t.start();
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     auto E1 = slice_edges(E, 0, half);
     auto E2 = slice_edges(E, half, m);
 
-    DynamicGraphColoring dgc(n, Delta);
+    DynamicGraphColorDplus1 dgc(n, Delta);
 
     parlay::internal::timer t("T2", false);
 
@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   // ================================================================
   std::cout << "=== TEST 3: Dynamic coloring (insert then delete) ===\n";
   {
-    DynamicGraphColoring dgc(n, Delta);
+    DynamicGraphColorDplus1 dgc(n, Delta);
 
     parlay::internal::timer t("T3", false);
 
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
       // GK24: insert all edges in one batch (static mode).
       {
         parlay::internal::timer t("", false);
-        DynamicGraphColoring dgc(n, Delta);
+        DynamicGraphColorDplus1 dgc(n, Delta);
         t.start();
         dgc.add_edge_batch(E);
         gk24_total += t.stop(); // stop() returns elapsed seconds
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
     edges path_edges = {{0,1},{1,2},{2,3},{3,4},{4,5}};
     auto path_G = utils::symmetrize(path_edges, sn);
 
-    DynamicGraphColoring dgc(sn, sDelta);
+    DynamicGraphColorDplus1 dgc(sn, sDelta);
     dgc.add_edge_batch(path_edges);
 
     bool ok = check_coloring(path_G, dgc.get_coloring(), sDelta);
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
     edges k4_edges = {{0,1},{0,2},{0,3},{1,2},{1,3},{2,3}};
     auto k4_G = utils::symmetrize(k4_edges, sn);
 
-    DynamicGraphColoring dgc(sn, sDelta);
+    DynamicGraphColorDplus1 dgc(sn, sDelta);
     dgc.add_edge_batch(k4_edges);
 
     bool ok = check_coloring(k4_G, dgc.get_coloring(), sDelta);
@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
   std::cout << "=== TEST 6: Cycle C8 built edge-by-edge ===\n";
   {
     int sn = 8, sDelta = 2;
-    DynamicGraphColoring dgc(sn, sDelta);
+    DynamicGraphColorDplus1 dgc(sn, sDelta);
 
     // Insert one edge at a time (batch size = 1).
     parlay::sequence<edge> cycle_edges = {
