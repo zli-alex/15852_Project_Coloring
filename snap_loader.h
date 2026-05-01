@@ -52,7 +52,7 @@ inline edges load_snap_edges(const std::string& path, long& n_out) {
     }
 
     // Build parlay sequence and sort+dedup.
-    auto E = parlay::sequence<edge>(raw.size(), [&](size_t i) { return raw[i]; });
+    auto E = parlay::tabulate(raw.size(), [&](size_t i) { return raw[i]; });
 
     // Sort by (u,v).
     parlay::sort_inplace(E, [](const edge& a, const edge& b) {
