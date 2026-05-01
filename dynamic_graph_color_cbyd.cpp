@@ -20,13 +20,16 @@ using utils = graph_utils<vertex>;
 // Correctness checker
 //
 // Verifies:
-//   1. Every vertex has a valid color in [0, Delta].
+//   1. Every vertex has a valid color in [0, num_colors-1].
 //   2. No two adjacent vertices share the same color.
+//
+// num_colors is the palette size used by the algorithm (c*Delta,
+// NOT Delta+1 — this is a c*Delta coloring, not a (Delta+1)-coloring).
 // ================================================================
-static bool check_coloring(const graph& G, const parlay::sequence<int>& colors, int Delta) {
+static bool check_coloring(const graph& G, const parlay::sequence<int>& colors, int num_colors) {
   long n = (long)G.size();
   auto ok = parlay::tabulate(n, [&](long u) -> bool {
-    if (colors[u] < 0 || colors[u] > Delta) return false;
+    if (colors[u] < 0 || colors[u] >= num_colors) return false;
     for (vertex v : G[u])
       if (colors[u] == colors[v]) return false;
     return true;
@@ -89,10 +92,10 @@ int main(int argc, char* argv[]) {
     double elapsed = t.stop();
     std::cout << "Time: " << elapsed << " s\n";
 
-    bool ok = check_coloring(G, dgc.get_coloring(), Delta);
+    bool ok = check_coloring(G, dgc.get_coloring(), dgc.num_colors);
     int max_c = parlay::reduce(dgc.get_coloring(), parlay::maximum<int>());
     std::cout << (ok ? "PASS" : "FAIL") << " — proper coloring, "
-              << max_c + 1 << " / " << Delta + 1 << " colors used\n\n";
+              << max_c + 1 << " / " << dgc.num_colors << " colors used\n\n";
   }
 
   // ================================================================
@@ -115,7 +118,7 @@ int main(int argc, char* argv[]) {
 
     // Check against the subgraph induced by E1.
     auto G1 = utils::symmetrize(E1, n);
-    bool ok1 = check_coloring(G1, dgc.get_coloring(), Delta);
+    bool ok1 = check_coloring(G1, dgc.get_coloring(), dgc.num_colors);
     std::cout << (ok1 ? "PASS" : "FAIL")
               << " — after inserting " << half << " edges\n";
 
@@ -124,11 +127,11 @@ int main(int argc, char* argv[]) {
     dgc.add_edge_batch(E2);
     std::cout << "Phase-2 time: " << t.stop() << " s\n";
 
-    bool ok2 = check_coloring(G, dgc.get_coloring(), Delta);
+    bool ok2 = check_coloring(G, dgc.get_coloring(), dgc.num_colors);
     int max_c = parlay::reduce(dgc.get_coloring(), parlay::maximum<int>());
     std::cout << (ok2 ? "PASS" : "FAIL")
               << " — after inserting full graph, "
-              << max_c + 1 << " / " << Delta + 1 << " colors used\n\n";
+              << max_c + 1 << " / " << dgc.num_colors << " colors used\n\n";
   }
 
   // ================================================================
@@ -145,7 +148,7 @@ int main(int argc, char* argv[]) {
     dgc.add_edge_batch(E);
     std::cout << "Insert all time: " << t.stop() << " s\n";
 
-    bool ok_full = check_coloring(G, dgc.get_coloring(), Delta);
+    bool ok_full = check_coloring(G, dgc.get_coloring(), dgc.num_colors);
     std::cout << (ok_full ? "PASS" : "FAIL") << " — after full insertion\n";
 
     // Delete the first 10% of edges.
@@ -159,11 +162,11 @@ int main(int argc, char* argv[]) {
 
     // Build the residual graph for checking.
     auto G_rem = utils::symmetrize(E_rem, n);
-    bool ok_del = check_coloring(G_rem, dgc.get_coloring(), Delta);
+    bool ok_del = check_coloring(G_rem, dgc.get_coloring(), dgc.num_colors);
     int max_c = parlay::reduce(dgc.get_coloring(), parlay::maximum<int>());
     std::cout << (ok_del ? "PASS" : "FAIL")
               << " — after deleting " << del_count << " edges, "
-              << max_c + 1 << " / " << Delta + 1 << " colors used\n\n";
+              << max_c + 1 << " / " << dgc.num_colors << " colors used\n\n";
   }
 
   // ================================================================
@@ -211,7 +214,7 @@ int main(int argc, char* argv[]) {
     DynamicGraphColorCbyD dgc(sn, sDelta);
     dgc.add_edge_batch(path_edges);
 
-    bool ok = check_coloring(path_G, dgc.get_coloring(), sDelta);
+    bool ok = check_coloring(path_G, dgc.get_coloring(), dgc.num_colors);
     std::cout << (ok ? "PASS" : "FAIL") << " — path graph\n";
     std::cout << "Colors: ";
     for (int i = 0; i < sn; i++) std::cout << dgc.get_coloring()[i] << " ";
@@ -230,7 +233,7 @@ int main(int argc, char* argv[]) {
     DynamicGraphColorCbyD dgc(sn, sDelta);
     dgc.add_edge_batch(k4_edges);
 
-    bool ok = check_coloring(k4_G, dgc.get_coloring(), sDelta);
+    bool ok = check_coloring(k4_G, dgc.get_coloring(), dgc.num_colors);
     std::cout << (ok ? "PASS" : "FAIL") << " — K4\n";
     std::cout << "Colors: ";
     for (int i = 0; i < sn; i++) std::cout << dgc.get_coloring()[i] << " ";
@@ -255,7 +258,7 @@ int main(int argc, char* argv[]) {
       dgc.add_edge_batch(edges{e});
     }
 
-    bool ok = check_coloring(cycle_G, dgc.get_coloring(), sDelta);
+    bool ok = check_coloring(cycle_G, dgc.get_coloring(), dgc.num_colors);
     std::cout << (ok ? "PASS" : "FAIL") << " — C8 edge-by-edge\n";
     std::cout << "Colors: ";
     for (int i = 0; i < sn; i++) std::cout << dgc.get_coloring()[i] << " ";
